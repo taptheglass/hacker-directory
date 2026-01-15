@@ -1,17 +1,9 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# Deno
+_fresh/
+data/*.db
 
 # AI
 .claude
 .gemini
 .codex
-
-# Virtual environments
-.venv
-
-database/*.db
+.vscode
