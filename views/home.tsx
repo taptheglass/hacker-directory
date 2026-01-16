@@ -36,7 +36,7 @@ export const Home: FC<PageProps> = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta
         name="description"
-        content="A directory of hacker's personal sites."
+        content="A directory of hackers' personal sites."
       />
       <title>The Hacker's Directory</title>
       <link rel="icon" href="/static/favicon.png" type="image/png" />
@@ -102,7 +102,7 @@ export const Home: FC<PageProps> = ({
       <Navbar />
 
       <div class="search-bar">
-        <h2 class="tagline">A directory of hacker's personal sites.</h2>
+        <h2 class="tagline">A directory of hackers' personal sites.</h2>
         <form class="search-form" method="get" action="/">
           <input
             type="text"
