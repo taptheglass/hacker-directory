@@ -197,7 +197,7 @@ export const Home: FC<PageProps> = ({
 
       <footer>
         <i>exported {exportCount} times</i>
-        <span class="footer-dot">\u00b7</span>
+        <span class="footer-dot">&#183;</span>
         <a
           href="https://www.paypal.com/ncp/payment/VNGWLASB3634W"
           class="footer-link"
@@ -206,7 +206,7 @@ export const Home: FC<PageProps> = ({
         >
           support
         </a>
-        <span class="footer-dot">\u00b7</span>
+        <span class="footer-dot">&#183;</span>
         <a
           href="https://github.com/taptheglass/hacker-directory"
           class="footer-github"
