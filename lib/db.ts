@@ -86,7 +86,7 @@ export interface QueryResult {
 
 export async function getLinks(
   options: QueryOptions,
-  clickCounts?: Map<string, number>
+  clickCounts?: Map<string, number>,
 ): Promise<QueryResult> {
   const kv = await openKv();
   const { page, perPage, search, sort = "updated", order = "desc" } = options;
@@ -106,7 +106,7 @@ export async function getLinks(
     filteredLinks = allLinks.filter(
       (link) =>
         link.author.toLowerCase().includes(searchLower) ||
-        link.extractedLink.toLowerCase().includes(searchLower)
+        link.extractedLink.toLowerCase().includes(searchLower),
     );
   }
 
@@ -130,7 +130,8 @@ export async function getLinks(
       }
       case "updated":
       default:
-        return multiplier * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+        return multiplier *
+          (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
     }
   });
 
@@ -146,7 +147,10 @@ export async function getLinks(
   return { links, total, totalPages };
 }
 
-async function getClickCountsInternal(kv: Deno.Kv, urls: string[]): Promise<Map<string, number>> {
+async function getClickCountsInternal(
+  kv: Deno.Kv,
+  urls: string[],
+): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   for (const url of urls) {
     const hash = await hashUrl(url);
@@ -202,7 +206,9 @@ export async function getClickCount(url: string): Promise<number> {
   return result.value || 0;
 }
 
-export async function getClickCounts(urls: string[]): Promise<Map<string, number>> {
+export async function getClickCounts(
+  urls: string[],
+): Promise<Map<string, number>> {
   const kv = await openKv();
   const counts = new Map<string, number>();
 

@@ -1,5 +1,5 @@
 import { parseHTML } from "linkedom";
-import { saveLinks, getTotalCount } from "./db.ts";
+import { getTotalCount, saveLinks } from "./db.ts";
 
 const POST_ID = "46618714";
 const BASE_URL = "https://news.ycombinator.com";
@@ -46,8 +46,8 @@ export async function scrapeHnComments(postId: string): Promise<Link[]> {
     const commentUrl = commentId ? `${BASE_URL}/item?id=${commentId}` : "";
 
     // Get author.
-    const author =
-      row.querySelector("a.hnuser")?.textContent?.trim() || "unknown";
+    const author = row.querySelector("a.hnuser")?.textContent?.trim() ||
+      "unknown";
 
     // Get comment text and extract links.
     const commentContent = row.querySelector(".commtext");
@@ -96,7 +96,7 @@ export async function runScraper(): Promise<{
     const totalCount = await getTotalCount();
 
     console.log(
-      `Scrape complete: ${newCount} new links added, ${totalCount} total`
+      `Scrape complete: ${newCount} new links added, ${totalCount} total`,
     );
     return { newCount, totalCount };
   } catch (error) {

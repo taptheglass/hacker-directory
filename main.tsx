@@ -131,6 +131,22 @@ const Page: FC<PageProps> = ({
       <title>The Hacker's Directory</title>
       <link rel="icon" href="/static/favicon.png" type="image/png" />
       <link rel="stylesheet" href="/static/styles.css" />
+      {/* Google tag (gtag.js) */}
+      <script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=G-J943R9DE44"
+      >
+      </script>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-J943R9DE44');
+        `,
+        }}
+      />
     </head>
     <body>
       <header>
@@ -221,7 +237,10 @@ const Page: FC<PageProps> = ({
       <footer>
         <i>exported {exportCount} times</i>
         <span class="footer-dot">·</span>
-        <a href="https://github.com/taptheglass/hacker-directory" class="footer-github">
+        <a
+          href="https://github.com/taptheglass/hacker-directory"
+          class="footer-github"
+        >
           <img src="/static/github.svg" alt="GitHub" width="16" height="16" />
         </a>
       </footer>

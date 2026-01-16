@@ -13,7 +13,13 @@
   "compilerOptions": {
     "jsx": "precompile",
     "jsxImportSource": "hono/jsx",
-    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns", "deno.unstable"]
+    "lib": [
+      "dom",
+      "dom.asynciterable",
+      "dom.iterable",
+      "deno.ns",
+      "deno.unstable"
+    ]
   },
   "deploy": {
     "org": "tristanisham",
