@@ -19,6 +19,23 @@ header {
   margin-bottom: 20px;
 }
 
+.header-links {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-link {
+  color: #888;
+  font-weight: bold;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.header-link:hover {
+  text-decoration: underline;
+}
+
 h1 {
   margin: 0;
   color: #ff6600;
