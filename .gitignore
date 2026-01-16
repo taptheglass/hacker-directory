@@ -1,9 +1,16 @@
-# Deno
-_fresh/
-data/*.db
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-# AI
-.claude
-.gemini
-.codex
-.vscode
+# Fresh build directory
+_fresh/
+# npm + other dependencies
+node_modules/
+vendor/
+
+.vite
+*.db
+.vscode/
