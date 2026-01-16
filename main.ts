@@ -5,6 +5,7 @@ import {
   getClickCounts,
   getAllLinks,
   trackClick,
+  getTotalCount,
   type StoredLink,
   type SortField,
   type SortOrder,
@@ -214,9 +215,14 @@ function escapeHtml(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
-// Run scraper on startup
-console.log("Running initial scrape...");
-await runScraper();
+// Run scraper on startup only if database is empty
+const count = await getTotalCount();
+if (count === 0) {
+  console.log("Database empty, running initial scrape...");
+  await runScraper();
+} else {
+  console.log(`Database has ${count} links, skipping initial scrape.`);
+}
 
 // Schedule hourly scrapes
 Deno.cron("scrape-hn", "0 * * * *", async () => {

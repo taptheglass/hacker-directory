@@ -1,14 +1,20 @@
 {
   "unstable": ["cron", "kv"],
+  "lock": false,
   "tasks": {
     "dev": "deno run --watch --unstable-kv -A main.ts",
-    "start": "deno run --unstable-kv -A main.ts"
+    "start": "deno run --unstable-kv -A main.ts",
+    "db:sync": "deno run --unstable-kv -A scripts/sync.ts"
   },
   "imports": {
     "hono": "jsr:@hono/hono@^4",
     "linkedom": "npm:linkedom@^0.18.12"
   },
   "compilerOptions": {
-    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"]
+    "lib": ["dom", "dom.asynciterable", "dom.iterable", "deno.ns", "deno.unstable"]
+  },
+  "deploy": {
+    "org": "tristanisham",
+    "app": "hackers-directory"
   }
 }
