@@ -7,7 +7,7 @@ export const Navbar: FC = () => (
       <a href="/">The Hacker's Directory</a>
     </h1>
     <div class="header-links">
-      <a href="/fishtank" class="header-link">Fishtank</a>
+      <a href="/fishtank" class="header-link">🐠 Fishtank</a>
       <a href="/about" class="header-link">About</a>
       <a
         href="https://www.paypal.com/ncp/payment/VNGWLASB3634W"
