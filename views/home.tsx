@@ -127,9 +127,12 @@ export const Home: FC<PageProps> = ({
         </form>
       </div>
 
-      <div class="stats">
-        Showing {links.length} of {total}{" "}
-        links{search && ` matching "${search}"`}
+      <div class="stats-row">
+        <div class="stats">
+          Showing {links.length} of {total}{" "}
+          links{search && ` matching "${search}"`}
+        </div>
+        <MobileFilters search={search} sort={sort} order={order} />
       </div>
 
       <table>
@@ -289,6 +292,52 @@ interface PaginationProps {
   sort: SortField;
   order: SortOrder;
 }
+
+interface MobileFiltersProps {
+  search: string;
+  sort: SortField;
+  order: SortOrder;
+}
+
+const MobileFilters: FC<MobileFiltersProps> = ({ search, sort, order }) => {
+  const buildParams = (field: SortField) => {
+    const isActive = sort === field;
+    const nextOrder = isActive && order === "desc" ? "asc" : "desc";
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    params.set("sort", field);
+    params.set("order", nextOrder);
+    return {
+      href: `?${params.toString()}`,
+      isActive,
+      arrow: isActive ? (order === "desc" ? "\u2193" : "\u2191") : "\u2195",
+    };
+  };
+
+  const filters = [
+    { field: "author" as const, label: "Author" },
+    { field: "likes" as const, label: "Likes" },
+    { field: "clicks" as const, label: "Clicks" },
+  ];
+
+  return (
+    <div class="mobile-filters" aria-label="Sort links">
+      {filters.map(({ field, label }) => {
+        const { href, isActive, arrow } = buildParams(field);
+        return (
+          <a
+            key={field}
+            class={`filter-btn ${isActive ? "active" : ""}`}
+            href={href}
+          >
+            <span class="filter-label">{label}</span>
+            <span class="filter-arrow">{arrow}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
+};
 
 const Pagination: FC<PaginationProps> = (
   { page, totalPages, search, sort, order },

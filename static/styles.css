@@ -122,6 +122,48 @@ h1 a:hover {
   font-size: 14px;
 }
 
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.stats-row .stats {
+  margin-bottom: 0;
+}
+
+.mobile-filters {
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  color: #444;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filter-btn.active {
+  background: #ff6600;
+  border-color: #ff6600;
+  color: white;
+}
+
+.filter-arrow {
+  opacity: 0.7;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -320,6 +362,14 @@ footer {
     width: 100%;
   }
 
+  .mobile-filters {
+    display: flex;
+  }
+
+  .stats-row {
+    align-items: flex-start;
+  }
+
   table {
     display: block;
     background: transparent;
@@ -415,5 +465,22 @@ footer {
   footer {
     flex-wrap: wrap;
     text-align: center;
+  }
+}
+
+@media (min-width: 520px) and (max-width: 720px) {
+  .stats-row {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  .mobile-filters {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 980px) {
+  th {
+    white-space: nowrap;
   }
 }
