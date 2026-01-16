@@ -26,6 +26,7 @@ export const AboutPage: FC = () => (
           local cookies for necessary performance and data storage, such as
           persisting like state across your visits. None of this information is
           used to profile or identify you.
+
         </p>
         <p>
           The data collected from this site is yours to use with attribution.
@@ -33,6 +34,9 @@ export const AboutPage: FC = () => (
           <a href="https://opensource.org/license/mit">MIT license</a>. You can
           view the license in its entirety on the{" "}
           <a href="https://github.com/taptheglass/hacker-directory">GitHub</a>.
+        </p>
+        <p>
+          Be warned. None of these links have been vetted. Visit them with the expected sense and caution you'd use navigating to any unknown site.
         </p>
         <h3>Why Build This Site?</h3>
         <p>
