@@ -1,5 +1,4 @@
-/// <reference lib="deno.unstable" />
-import * as cheerio from "cheerio";
+import { parseHTML } from "linkedom";
 import { saveLinks, getTotalCount } from "./db.ts";
 
 const POST_ID = "46618714";
@@ -26,51 +25,52 @@ export async function scrapeHnComments(postId: string): Promise<Link[]> {
   }
 
   const html = await response.text();
-  const $ = cheerio.load(html);
+  const { document: doc } = parseHTML(html);
 
   const results: Link[] = [];
 
-  // Find all comment rows
-  $("tr.athing.comtr").each((_index, row) => {
-    const $row = $(row);
+  // Find all comment rows.
+  const rows = doc.querySelectorAll("tr.athing.comtr");
+  for (const row of rows) {
+    // Check indent level - top-level comments have indent width of 0.
+    const indentImg = row.querySelector("td.ind img");
+    if (!indentImg) continue;
 
-    // Check indent level - top-level comments have indent width of 0
-    const indentImg = $row.find("td.ind img");
-    if (indentImg.length === 0) return;
+    const indentWidth = parseInt(indentImg.getAttribute("width") || "0", 10);
 
-    const indentWidth = parseInt(indentImg.attr("width") || "0", 10);
+    // Only process top-level comments (indent = 0).
+    if (indentWidth !== 0) continue;
 
-    // Only process top-level comments (indent = 0)
-    if (indentWidth !== 0) return;
-
-    // Get comment ID for permalink
-    const commentId = $row.attr("id");
+    // Get comment ID for permalink.
+    const commentId = row.getAttribute("id");
     const commentUrl = commentId ? `${BASE_URL}/item?id=${commentId}` : "";
 
-    // Get author
-    const author = $row.find("a.hnuser").text() || "unknown";
+    // Get author.
+    const author =
+      row.querySelector("a.hnuser")?.textContent?.trim() || "unknown";
 
-    // Get comment text and extract links
-    const $commentDiv = $row.find("div.commtext");
-    if ($commentDiv.length === 0) return;
+    // Get comment text and extract links.
+    const commentContent = row.querySelector(".commtext");
+    if (!commentContent) continue;
 
-    // Find all links in the comment
-    $commentDiv.find("a[href]").each((_i, link) => {
-      let href = $(link).attr("href") || "";
+    // Find all links in the comment.
+    const links = commentContent.querySelectorAll("a[href]");
+    for (const link of links) {
+      let href = link.getAttribute("href") || "";
 
-      // Skip reply links and other HN internal links
+      // Skip reply links and other HN internal links.
       if (href.startsWith("reply?") || href.startsWith("user?")) {
-        return;
+        continue;
       }
 
-      // Make relative URLs absolute
+      // Make relative URLs absolute.
       if (href.startsWith("/")) {
         href = `${BASE_URL}${href}`;
       }
 
-      // Skip if no valid URL
+      // Skip if no valid URL.
       if (!href || href === "#") {
-        return;
+        continue;
       }
 
       results.push({
@@ -78,8 +78,8 @@ export async function scrapeHnComments(postId: string): Promise<Link[]> {
         commentUrl,
         extractedLink: href,
       });
-    });
-  });
+    }
+  }
 
   return results;
 }

@@ -1,6 +1,3 @@
-/// <reference lib="deno.unstable" />
-import { crypto } from "https://deno.land/std@0.216.0/crypto/mod.ts";
-import { encodeHex } from "https://deno.land/std@0.216.0/encoding/hex.ts";
 import type { Link } from "./scraper.ts";
 
 export interface StoredLink extends Link {
@@ -9,14 +6,12 @@ export interface StoredLink extends Link {
   updatedAt: string;
 }
 
-// Use local file for dev, undefined uses Deno Deploy's managed KV in production
+// Use local file for dev, undefined uses Deno Deploy's managed KV in production.
 function getKvPath(): string | undefined {
   if (Deno.env.get("DENO_DEPLOYMENT_ID")) {
-    return undefined; // Use Deno Deploy's managed KV
+    return undefined; // Use Deno Deploy's managed KV.
   }
-  // Get absolute path relative to this module
-  const moduleDir = new URL(".", import.meta.url).pathname;
-  return `${moduleDir}../data/kv.db`;
+  return "./data/kv.db";
 }
 
 async function openKv(): Promise<Deno.Kv> {
@@ -24,7 +19,7 @@ async function openKv(): Promise<Deno.Kv> {
 }
 
 function generateId(commentUrl: string, extractedLink: string): string {
-  // Create a deterministic ID from the unique constraint fields
+  // Create a deterministic ID from the unique constraint fields.
   return btoa(`${commentUrl}:${extractedLink}`).replace(/[/+=]/g, "_");
 }
 
@@ -38,13 +33,13 @@ export async function saveLinks(links: Link[]): Promise<number> {
     const existing = await kv.get<StoredLink>(["links", id]);
 
     if (existing.value) {
-      // Update timestamp on existing record
+      // Update timestamp on existing record.
       await kv.set(["links", id], {
         ...existing.value,
         updatedAt: now,
       });
     } else {
-      // Insert new record
+      // Insert new record.
       const storedLink: StoredLink = {
         id,
         author: link.author,
@@ -56,14 +51,14 @@ export async function saveLinks(links: Link[]): Promise<number> {
 
       await kv.set(["links", id], storedLink);
 
-      // Also index by author for search
+      // Also index by author for search.
       await kv.set(["by_author", link.author.toLowerCase(), id], id);
 
       newCount++;
     }
   }
 
-  // Update total count
+  // Update total count.
   const countResult = await kv.get<number>(["meta", "count"]);
   const currentCount = countResult.value || 0;
   await kv.set(["meta", "count"], currentCount + newCount);
@@ -98,13 +93,13 @@ export async function getLinks(
 
   const allLinks: StoredLink[] = [];
 
-  // Fetch all links
+  // Fetch all links.
   const iter = kv.list<StoredLink>({ prefix: ["links"] });
   for await (const entry of iter) {
     allLinks.push(entry.value);
   }
 
-  // Filter by search if provided
+  // Filter by search if provided.
   let filteredLinks = allLinks;
   if (search) {
     const searchLower = search.toLowerCase();
@@ -115,14 +110,14 @@ export async function getLinks(
     );
   }
 
-  // For clicks sorting, we need to fetch click counts if not provided
+  // For clicks sorting, we need to fetch click counts if not provided.
   let clicks = clickCounts;
   if (sort === "clicks" && !clicks) {
     const urls = filteredLinks.map((l) => l.extractedLink);
     clicks = await getClickCountsInternal(kv, urls);
   }
 
-  // Sort based on field and order
+  // Sort based on field and order.
   const multiplier = order === "desc" ? -1 : 1;
   filteredLinks.sort((a, b) => {
     switch (sort) {
@@ -142,7 +137,7 @@ export async function getLinks(
   const total = filteredLinks.length;
   const totalPages = Math.ceil(total / perPage);
 
-  // Paginate
+  // Paginate.
   const offset = (page - 1) * perPage;
   const links = filteredLinks.slice(offset, offset + perPage);
 
@@ -154,7 +149,7 @@ export async function getLinks(
 async function getClickCountsInternal(kv: Deno.Kv, urls: string[]): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   for (const url of urls) {
-    const hash = await md5(url);
+    const hash = await hashUrl(url);
     const result = await kv.get<number>(["clicks", hash]);
     counts.set(url, result.value || 0);
   }
@@ -168,29 +163,32 @@ export async function getTotalCount(): Promise<number> {
   return countResult.value || 0;
 }
 
-/** Hash a string using MD5. Used for generating short keys, not for security. */
-async function md5(text: string): Promise<string> {
+/** Hash a URL using SHA-256. */
+async function hashUrl(text: string): Promise<string> {
   const data = new TextEncoder().encode(text);
-  const hash = await crypto.subtle.digest("MD5", data);
-  return encodeHex(hash);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 16);
 }
 
 export async function trackClick(url: string): Promise<void> {
   const kv = await openKv();
-  const hash = await md5(url);
+  const hash = await hashUrl(url);
   const today = new Date().toISOString().slice(0, 10);
 
-  // Increment total clicks
+  // Increment total clicks.
   const totalKey = ["clicks", hash];
   const totalResult = await kv.get<number>(totalKey);
   await kv.set(totalKey, (totalResult.value || 0) + 1);
 
-  // Increment daily clicks
+  // Increment daily clicks.
   const dailyKey = ["clicks_daily", hash, today];
   const dailyResult = await kv.get<number>(dailyKey);
   await kv.set(dailyKey, (dailyResult.value || 0) + 1);
 
-  // Store URL mapping for reference
+  // Store URL mapping for reference.
   await kv.set(["click_urls", hash], url);
 
   kv.close();
@@ -198,7 +196,7 @@ export async function trackClick(url: string): Promise<void> {
 
 export async function getClickCount(url: string): Promise<number> {
   const kv = await openKv();
-  const hash = await md5(url);
+  const hash = await hashUrl(url);
   const result = await kv.get<number>(["clicks", hash]);
   kv.close();
   return result.value || 0;
@@ -209,7 +207,7 @@ export async function getClickCounts(urls: string[]): Promise<Map<string, number
   const counts = new Map<string, number>();
 
   for (const url of urls) {
-    const hash = await md5(url);
+    const hash = await hashUrl(url);
     const result = await kv.get<number>(["clicks", hash]);
     counts.set(url, result.value || 0);
   }
@@ -229,6 +227,6 @@ export async function getAllLinks(): Promise<StoredLink[]> {
 
   kv.close();
 
-  // Sort by ID (insertion order approximation)
+  // Sort by ID (insertion order approximation).
   return links.sort((a, b) => a.id.localeCompare(b.id));
 }
