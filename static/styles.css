@@ -261,6 +261,15 @@ footer {
   color: #666;
 }
 
+.footer-link {
+  color: #666;
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
 .footer-github {
   display: flex;
   align-items: center;

@@ -184,6 +184,15 @@ export const Home: FC<PageProps> = ({
         <i>exported {exportCount} times</i>
         <span class="footer-dot">\u00b7</span>
         <a
+          href="https://www.paypal.com/ncp/payment/VNGWLASB3634W"
+          class="footer-link"
+          target="_blank"
+          rel="noopener"
+        >
+          support
+        </a>
+        <span class="footer-dot">\u00b7</span>
+        <a
           href="https://github.com/taptheglass/hacker-directory"
           class="footer-github"
         >
