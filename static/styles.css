@@ -12,6 +12,15 @@ body {
   color: #333;
 }
 
+body.fishtank-page {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 header {
   display: flex;
   justify-content: space-between;
@@ -122,6 +131,20 @@ h1 a:hover {
   font-size: 14px;
 }
 
+.stats-dot {
+  margin: 0 6px;
+  color: #999;
+}
+
+.stats-shuffle {
+  color: #888;
+  text-decoration: underline;
+}
+
+.stats-shuffle:hover {
+  color: #666;
+}
+
 .stats-row {
   display: flex;
   align-items: center;
@@ -162,6 +185,116 @@ h1 a:hover {
 
 .filter-arrow {
   opacity: 0.7;
+}
+
+.fishtank-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  background: #111827;
+  color: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin-bottom: 0;
+}
+
+.fishtank-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.fishtank-brand a {
+  color: #ff6600;
+  text-decoration: none;
+}
+
+.fishtank-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fishtank-btn {
+  border: 1px solid rgba(249, 250, 251, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f9fafb;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.fishtank-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.fishtank-like {
+  border-color: #ff69b4;
+  color: #ff69b4;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 18px;
+}
+
+.fishtank-like:hover {
+  background: rgba(255, 105, 180, 0.12);
+}
+
+.fishtank-like.loading {
+  opacity: 0;
+}
+
+.fishtank-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.fishtank-likes {
+  color: #d1d5db;
+}
+
+.fishtank-meta a {
+  color: #f9fafb;
+  text-decoration: none;
+  border: 1px solid rgba(249, 250, 251, 0.25);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.fishtank-stage {
+  flex: 1;
+  position: relative;
+  background: #0f172a;
+}
+
+.fishtank-status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+  font-size: 12px;
+  z-index: 2;
+}
+
+.fishtank-status:empty {
+  display: none;
+}
+
+#fishtank-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
 }
 
 table {
@@ -459,6 +592,22 @@ footer {
   }
 
   .pagination {
+    justify-content: center;
+  }
+
+  .fishtank-nav {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .fishtank-controls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fishtank-meta {
+    width: 100%;
     justify-content: center;
   }
 

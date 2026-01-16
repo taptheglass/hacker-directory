@@ -1,6 +1,7 @@
 /** @jsxImportSource hono/jsx */
 import type { FC } from "hono/jsx";
 import type { SortField, SortOrder, StoredLink } from "../lib/db.ts";
+import { GoogleAnalytics } from "./components/ga.tsx";
 import { Navbar } from "./components/navbar.tsx";
 
 interface PageProps {
@@ -29,49 +30,43 @@ export const Home: FC<PageProps> = ({
   sort,
   order,
   exportCount,
-}) => (
-  <html lang="en">
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta
-        name="description"
-        content="A directory of hackers' personal sites."
-      />
-      <meta property="og:title" content="The Hacker's Directory" />
-      <meta
-        property="og:description"
-        content="A directory of hackers' personal sites."
-      />
-      <meta property="og:type" content="website" />
-      <meta name="twitter:card" content="summary" />
-      <meta name="twitter:title" content="The Hacker's Directory" />
-      <meta
-        name="twitter:description"
-        content="A directory of hackers' personal sites."
-      />
-      <title>The Hacker's Directory</title>
-      <link rel="icon" href="/static/favicon.png" type="image/png" />
-      <link rel="stylesheet" href="/static/styles.css" />
-      {/* Google tag (gtag.js) */}
-      <script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=G-J943R9DE44"
-      >
-      </script>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-J943R9DE44');
-        `,
-        }}
-      />
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
+}) => {
+  const randomPage = totalPages > 1
+    ? Math.floor(Math.random() * totalPages) + 1
+    : 1;
+  const shuffleParams = new URLSearchParams();
+  if (search) shuffleParams.set("q", search);
+  if (sort) shuffleParams.set("sort", sort);
+  if (order) shuffleParams.set("order", order);
+  if (randomPage > 1) shuffleParams.set("page", String(randomPage));
+  return (
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+          name="description"
+          content="A directory of hackers' personal sites."
+        />
+        <meta property="og:title" content="The Hacker's Directory" />
+        <meta
+          property="og:description"
+          content="A directory of hackers' personal sites."
+        />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="The Hacker's Directory" />
+        <meta
+          name="twitter:description"
+          content="A directory of hackers' personal sites."
+        />
+        <title>The Hacker's Directory</title>
+        <link rel="icon" href="/static/favicon.png" type="image/png" />
+        <link rel="stylesheet" href="/static/styles.css" />
+      <GoogleAnalytics />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
           document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.heart-btn').forEach(function(btn) {
               btn.addEventListener('click', async function() {
@@ -107,116 +102,121 @@ export const Home: FC<PageProps> = ({
             });
           });
         `,
-        }}
-      />
-    </head>
-    <body>
-      <Navbar />
+          }}
+        />
+      </head>
+      <body>
+        <Navbar />
 
-      <div class="search-bar">
-        <h2 class="tagline">A directory of hackers' personal sites.</h2>
-        <form class="search-form" method="get" action="/">
-          <input
-            type="text"
-            name="q"
-            placeholder="Search by author or URL..."
-            value={search}
-          />
-          <button type="submit">Search</button>
-          {search && <a href="/">Clear</a>}
-        </form>
-      </div>
-
-      <div class="stats-row">
-        <div class="stats">
-          Showing {links.length} of {total}{" "}
-          links{search && ` matching "${search}"`}
+        <div class="search-bar">
+          <h2 class="tagline">A directory of hackers' personal sites.</h2>
+          <form class="search-form" method="get" action="/">
+            <input
+              type="text"
+              name="q"
+              placeholder="Search by author or URL..."
+              value={search}
+            />
+            <button type="submit">Search</button>
+            {search && <a href="/">Clear</a>}
+          </form>
         </div>
-        <MobileFilters search={search} sort={sort} order={order} />
-      </div>
 
-      <table>
-        <thead>
-          <tr>
-            <SortHeader
-              field="author"
-              label="Author"
-              currentSort={sort}
-              currentOrder={order}
-              search={search}
-            />
-            <th>Site</th>
-            <th>Comment</th>
-            <SortHeader
-              field="likes"
-              label="Likes"
-              currentSort={sort}
-              currentOrder={order}
-              search={search}
-            />
-            <SortHeader
-              field="clicks"
-              label="Clicks"
-              currentSort={sort}
-              currentOrder={order}
-              search={search}
-            />
-            <th>Like</th>
-          </tr>
-        </thead>
-        <tbody>
-          {links.length > 0
-            ? (
-              links.map((link) => (
-                <LinkRow
-                  key={link.id}
-                  link={link}
-                  clicks={clickCounts[link.extractedLink] || 0}
-                  likes={likeCounts[link.extractedLink] || 0}
-                  liked={userLiked[link.extractedLink] || false}
-                />
-              ))
-            )
-            : (
-              <tr>
-                <td colspan={6} style="text-align: center; color: #666;">
-                  No links found
-                </td>
-              </tr>
-            )}
-        </tbody>
-      </table>
+        <div class="stats-row">
+          <div class="stats">
+            Showing {links.length} of {total}{" "}
+            links{search && ` matching "${search}"`}
+            <span class="stats-dot">&#183;</span>
+            <a class="stats-shuffle" href={`?${shuffleParams.toString()}`}>
+              shuffle
+            </a>
+          </div>
+          <MobileFilters search={search} sort={sort} order={order} />
+        </div>
 
-      <Pagination
-        page={page}
-        totalPages={totalPages}
-        search={search}
-        sort={sort}
-        order={order}
-      />
+        <table>
+          <thead>
+            <tr>
+              <SortHeader
+                field="author"
+                label="Author"
+                currentSort={sort}
+                currentOrder={order}
+                search={search}
+              />
+              <th>Site</th>
+              <th>Comment</th>
+              <SortHeader
+                field="likes"
+                label="Likes"
+                currentSort={sort}
+                currentOrder={order}
+                search={search}
+              />
+              <SortHeader
+                field="clicks"
+                label="Clicks"
+                currentSort={sort}
+                currentOrder={order}
+                search={search}
+              />
+              <th>Like</th>
+            </tr>
+          </thead>
+          <tbody>
+            {links.length > 0
+              ? (
+                links.map((link) => (
+                  <LinkRow
+                    key={link.id}
+                    link={link}
+                    clicks={clickCounts[link.extractedLink] || 0}
+                    likes={likeCounts[link.extractedLink] || 0}
+                    liked={userLiked[link.extractedLink] || false}
+                  />
+                ))
+              )
+              : (
+                <tr>
+                  <td colspan={6} style="text-align: center; color: #666;">
+                    No links found
+                  </td>
+                </tr>
+              )}
+          </tbody>
+        </table>
 
-      <footer>
-        <i>exported {exportCount} times</i>
-        <span class="footer-dot">&#183;</span>
-        <a
-          href="https://www.paypal.com/ncp/payment/VNGWLASB3634W"
-          class="footer-link"
-          target="_blank"
-          rel="noopener"
-        >
-          support
-        </a>
-        <span class="footer-dot">&#183;</span>
-        <a
-          href="https://github.com/taptheglass/hacker-directory"
-          class="footer-github"
-        >
-          <img src="/static/github.svg" alt="GitHub" width="16" height="16" />
-        </a>
-      </footer>
-    </body>
-  </html>
-);
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          search={search}
+          sort={sort}
+          order={order}
+        />
+
+        <footer>
+          <i>exported {exportCount} times</i>
+          <span class="footer-dot">&#183;</span>
+          <a
+            href="https://www.paypal.com/ncp/payment/VNGWLASB3634W"
+            class="footer-link"
+            target="_blank"
+            rel="noopener"
+          >
+            support
+          </a>
+          <span class="footer-dot">&#183;</span>
+          <a
+            href="https://github.com/taptheglass/hacker-directory"
+            class="footer-github"
+          >
+            <img src="/static/github.svg" alt="GitHub" width="16" height="16" />
+          </a>
+        </footer>
+      </body>
+    </html>
+  );
+};
 
 interface SortHeaderProps {
   field: SortField;
@@ -231,7 +231,9 @@ const SortHeader: FC<SortHeaderProps> = (
 ) => {
   const isActive = currentSort === field;
   const nextOrder = isActive && currentOrder === "desc" ? "asc" : "desc";
-  const arrow = isActive ? (currentOrder === "desc" ? "\u2193" : "\u2191") : "\u2195";
+  const arrow = isActive
+    ? (currentOrder === "desc" ? "\u2193" : "\u2191")
+    : "\u2195";
 
   const params = new URLSearchParams();
   if (search) params.set("q", search);

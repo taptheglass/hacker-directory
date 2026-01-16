@@ -18,6 +18,7 @@ import {
 } from "./lib/db.ts";
 import { runScraper } from "./lib/scraper.ts";
 import { AboutPage } from "./views/about.tsx";
+import { FishtankPage } from "./views/fishtank.tsx";
 import { Home } from "./views/home.tsx";
 
 function getOrCreateVisitorId(c: Parameters<typeof getCookie>[0]): string {
@@ -96,9 +97,40 @@ app.get("/", async (c) => {
   );
 });
 
+
 // About page
 app.get("/about", (c) => {
   return c.html(<AboutPage />);
+});
+
+// Fishtank page
+app.get("/fishtank", (c) => {
+  return c.html(<FishtankPage urls={[]} />);
+});
+
+// Fishtank link feed
+app.get("/fishtank/links", async (c) => {
+  const url = new URL(c.req.url);
+  const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
+  const perPage = Math.max(
+    1,
+    parseInt(url.searchParams.get("perPage") || "200", 10),
+  );
+  const links = await getAllLinks();
+  const urls = Array.from(
+    new Set(links.map((link) => link.extractedLink)),
+  );
+  const total = urls.length;
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const start = (page - 1) * perPage;
+  const pageUrls = urls.slice(start, start + perPage);
+  return c.json({
+    page,
+    perPage,
+    total,
+    totalPages,
+    urls: pageUrls,
+  });
 });
 
 // Click tracking redirect
@@ -130,6 +162,28 @@ app.post("/like", async (c) => {
   return c.json(result);
 });
 
+// Like status lookup
+app.get("/like/status", async (c) => {
+  const visitorId = getOrCreateVisitorId(c);
+  setCookie(c, "visitor_id", visitorId, {
+    maxAge: 60 * 60 * 24 * 365,
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+
+  const url = c.req.query("url");
+  if (!url) {
+    return c.json({ error: "Missing url" }, 400);
+  }
+
+  const likeCountsMap = await getLikeCounts([url]);
+  const userLikedSet = await getUserLikes([url], visitorId);
+  return c.json({
+    count: likeCountsMap.get(url) || 0,
+    liked: userLikedSet.has(url),
+  });
+});
+
 // CSV download
 app.get("/download.csv", async (_c) => {
   await trackExport();
@@ -157,11 +211,13 @@ app.get("/download.csv", async (_c) => {
   });
 });
 
-// Run scraper on startup only if database is empty
+// Run scraper on startup only if database is empty, but don't block startup
 const count = await getTotalCount();
 if (count === 0) {
-  console.log("Database empty, running initial scrape...");
-  await runScraper();
+  console.log("Database empty, starting initial scrape in background...");
+  runScraper().catch((error) => {
+    console.error("Initial scrape failed:", error);
+  });
 } else {
   console.log(`Database has ${count} links, skipping initial scrape.`);
 }

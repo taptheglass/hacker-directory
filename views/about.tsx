@@ -1,5 +1,6 @@
 /** @jsxImportSource hono/jsx */
 import type { FC } from "hono/jsx";
+import { GoogleAnalytics } from "./components/ga.tsx";
 import { Navbar } from "./components/navbar.tsx";
 
 export const AboutPage: FC = () => (
@@ -11,6 +12,7 @@ export const AboutPage: FC = () => (
       <title>About · The Hacker's Directory</title>
       <link rel="icon" href="/static/favicon.png" type="image/png" />
       <link rel="stylesheet" href="/static/styles.css" />
+      <GoogleAnalytics />
     </head>
     <body>
       <Navbar />

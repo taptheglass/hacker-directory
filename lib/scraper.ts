@@ -12,6 +12,7 @@ export interface Link {
 
 export async function scrapeHnComments(postId: string): Promise<Link[]> {
   const url = `${BASE_URL}/item?id=${postId}`;
+  console.log(`Fetching HN comments from ${url}`);
 
   const response = await fetch(url, {
     headers: {
@@ -28,10 +29,18 @@ export async function scrapeHnComments(postId: string): Promise<Link[]> {
   const { document: doc } = parseHTML(html);
 
   const results: Link[] = [];
+  console.log("Parsing comment threads...");
 
   // Find all comment rows.
   const rows = doc.querySelectorAll("tr.athing.comtr");
+  console.log(`Found ${rows.length} comment rows`);
+  let processed = 0;
+  let topLevel = 0;
   for (const row of rows) {
+    processed += 1;
+    if (processed % 50 === 0) {
+      console.log(`Processed ${processed}/${rows.length} rows...`);
+    }
     // Check indent level - top-level comments have indent width of 0.
     const indentImg = row.querySelector("td.ind img");
     if (!indentImg) continue;
@@ -40,6 +49,7 @@ export async function scrapeHnComments(postId: string): Promise<Link[]> {
 
     // Only process top-level comments (indent = 0).
     if (indentWidth !== 0) continue;
+    topLevel += 1;
 
     // Get comment ID for permalink.
     const commentId = row.getAttribute("id");
@@ -81,6 +91,9 @@ export async function scrapeHnComments(postId: string): Promise<Link[]> {
     }
   }
 
+  console.log(
+    `Parsed ${topLevel} top-level comments, extracted ${results.length} links`,
+  );
   return results;
 }
 
