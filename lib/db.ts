@@ -230,3 +230,17 @@ export async function getAllLinks(): Promise<StoredLink[]> {
   // Sort by ID (insertion order approximation).
   return links.sort((a, b) => a.id.localeCompare(b.id));
 }
+
+export async function trackExport(): Promise<void> {
+  const kv = await openKv();
+  const result = await kv.get<number>(["meta", "exports"]);
+  await kv.set(["meta", "exports"], (result.value || 0) + 1);
+  kv.close();
+}
+
+export async function getExportCount(): Promise<number> {
+  const kv = await openKv();
+  const result = await kv.get<number>(["meta", "exports"]);
+  kv.close();
+  return result.value || 0;
+}

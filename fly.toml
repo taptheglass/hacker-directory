@@ -12,7 +12,7 @@ primary_region = 'iad'
 PORT = '8080'
 
 [processes]
-app = 'run -A ./main.ts'
+app = 'run -A ./main.tsx'
 
 [http_service]
 auto_start_machines = true

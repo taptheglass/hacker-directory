@@ -201,3 +201,28 @@ a:hover {
   color: #999;
   pointer-events: none;
 }
+
+footer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+.footer-dot {
+  color: #666;
+}
+
+.footer-github {
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+.footer-github:hover {
+  opacity: 1;
+  text-decoration: none;
+}
