@@ -86,6 +86,7 @@ function renderPage(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A directory of hacker's personal sites.">
   <title>The Hacker's Directory</title>
+  <link rel="icon" href="/static/favicon.png" type="image/png">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
