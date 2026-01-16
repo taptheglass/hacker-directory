@@ -38,6 +38,18 @@ export const Home: FC<PageProps> = ({
         name="description"
         content="A directory of hackers' personal sites."
       />
+      <meta property="og:title" content="The Hacker's Directory" />
+      <meta
+        property="og:description"
+        content="A directory of hackers' personal sites."
+      />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content="The Hacker's Directory" />
+      <meta
+        name="twitter:description"
+        content="A directory of hackers' personal sites."
+      />
       <title>The Hacker's Directory</title>
       <link rel="icon" href="/static/favicon.png" type="image/png" />
       <link rel="stylesheet" href="/static/styles.css" />
