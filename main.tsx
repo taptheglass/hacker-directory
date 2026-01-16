@@ -1,20 +1,32 @@
 /** @jsxImportSource hono/jsx */
 import { Hono } from "hono";
+import { getCookie, setCookie } from "hono/cookie";
 import { serveStatic } from "hono/deno";
 import type { FC } from "hono/jsx";
 import {
   getAllLinks,
   getClickCounts,
   getExportCount,
+  getLikeCounts,
   getLinks,
   getTotalCount,
+  getUserLikes,
   type SortField,
   type SortOrder,
   type StoredLink,
+  toggleLike,
   trackClick,
   trackExport,
 } from "./lib/db.ts";
 import { runScraper } from "./lib/scraper.ts";
+
+function getOrCreateVisitorId(c: Parameters<typeof getCookie>[0]): string {
+  let visitorId = getCookie(c, "visitor_id");
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+  }
+  return visitorId;
+}
 
 const app = new Hono();
 
@@ -25,10 +37,17 @@ app.use("/static/*", serveStatic({ root: "./" }));
 
 // Home page
 app.get("/", async (c) => {
+  const visitorId = getOrCreateVisitorId(c);
+  setCookie(c, "visitor_id", visitorId, {
+    maxAge: 60 * 60 * 24 * 365, // 1 year
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+
   const url = new URL(c.req.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const search = url.searchParams.get("q")?.trim() || "";
-  const sort = (url.searchParams.get("sort") || "updated") as SortField;
+  const sort = (url.searchParams.get("sort") || "likes") as SortField;
   const order = (url.searchParams.get("order") || "desc") as SortOrder;
 
   const result = await getLinks({
@@ -42,8 +61,20 @@ app.get("/", async (c) => {
   const urls = result.links.map((link) => link.extractedLink);
   const clickCountsMap = await getClickCounts(urls);
   const clickCounts: Record<string, number> = {};
-  for (const [url, count] of clickCountsMap) {
-    clickCounts[url] = count;
+  for (const [u, count] of clickCountsMap) {
+    clickCounts[u] = count;
+  }
+
+  const likeCountsMap = await getLikeCounts(urls);
+  const likeCounts: Record<string, number> = {};
+  for (const [u, count] of likeCountsMap) {
+    likeCounts[u] = count;
+  }
+
+  const userLikedSet = await getUserLikes(urls, visitorId);
+  const userLiked: Record<string, boolean> = {};
+  for (const u of urls) {
+    userLiked[u] = userLikedSet.has(u);
   }
 
   const exportCount = await getExportCount();
@@ -56,6 +87,8 @@ app.get("/", async (c) => {
       page={page}
       search={search}
       clickCounts={clickCounts}
+      likeCounts={likeCounts}
+      userLiked={userLiked}
       sort={sort}
       order={order}
       exportCount={exportCount}
@@ -71,6 +104,25 @@ app.get("/go", async (c) => {
   }
   await trackClick(target);
   return c.redirect(target, 302);
+});
+
+// Like toggle endpoint
+app.post("/like", async (c) => {
+  const visitorId = getOrCreateVisitorId(c);
+  setCookie(c, "visitor_id", visitorId, {
+    maxAge: 60 * 60 * 24 * 365,
+    httpOnly: true,
+    sameSite: "Lax",
+  });
+
+  const body = await c.req.json();
+  const url = body.url;
+  if (!url) {
+    return c.json({ error: "Missing url" }, 400);
+  }
+
+  const result = await toggleLike(url, visitorId);
+  return c.json(result);
 });
 
 // CSV download
@@ -104,6 +156,8 @@ interface PageProps {
   page: number;
   search: string;
   clickCounts: Record<string, number>;
+  likeCounts: Record<string, number>;
+  userLiked: Record<string, boolean>;
   sort: SortField;
   order: SortOrder;
   exportCount: number;
@@ -116,6 +170,8 @@ const Page: FC<PageProps> = ({
   page,
   search,
   clickCounts,
+  likeCounts,
+  userLiked,
   sort,
   order,
   exportCount,
@@ -144,6 +200,46 @@ const Page: FC<PageProps> = ({
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', 'G-J943R9DE44');
+        `,
+        }}
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+          document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.heart-btn').forEach(function(btn) {
+              btn.addEventListener('click', async function() {
+                const url = decodeURIComponent(this.dataset.url);
+                const likesCell = this.closest('tr').querySelector('.likes');
+
+                try {
+                  const response = await fetch('/like', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: url })
+                  });
+
+                  if (response.ok) {
+                    const data = await response.json();
+                    likesCell.textContent = data.count;
+                    this.dataset.likes = data.count;
+
+                    if (data.liked) {
+                      this.classList.add('liked');
+                      this.textContent = '♥';
+                      this.setAttribute('aria-label', 'Unlike');
+                    } else {
+                      this.classList.remove('liked');
+                      this.textContent = '♡';
+                      this.setAttribute('aria-label', 'Like');
+                    }
+                  }
+                } catch (err) {
+                  console.error('Failed to toggle like:', err);
+                }
+              });
+            });
+          });
         `,
         }}
       />
@@ -190,19 +286,20 @@ const Page: FC<PageProps> = ({
             <th>Site</th>
             <th>Comment</th>
             <SortHeader
+              field="likes"
+              label="Likes"
+              currentSort={sort}
+              currentOrder={order}
+              search={search}
+            />
+            <SortHeader
               field="clicks"
               label="Clicks"
               currentSort={sort}
               currentOrder={order}
               search={search}
             />
-            <SortHeader
-              field="updated"
-              label="Updated (UTC)"
-              currentSort={sort}
-              currentOrder={order}
-              search={search}
-            />
+            <th>Like</th>
           </tr>
         </thead>
         <tbody>
@@ -213,12 +310,14 @@ const Page: FC<PageProps> = ({
                   key={link.id}
                   link={link}
                   clicks={clickCounts[link.extractedLink] || 0}
+                  likes={likeCounts[link.extractedLink] || 0}
+                  liked={userLiked[link.extractedLink] || false}
                 />
               ))
             )
             : (
               <tr>
-                <td colspan={5} style="text-align: center; color: #666;">
+                <td colspan={6} style="text-align: center; color: #666;">
                   No links found
                 </td>
               </tr>
@@ -278,14 +377,16 @@ const SortHeader: FC<SortHeaderProps> = (
 interface LinkRowProps {
   link: StoredLink;
   clicks: number;
+  likes: number;
+  liked: boolean;
 }
 
-const LinkRow: FC<LinkRowProps> = ({ link, clicks }) => {
+const LinkRow: FC<LinkRowProps> = ({ link, clicks, likes, liked }) => {
   const displayUrl = link.extractedLink.length > 60
     ? link.extractedLink.slice(0, 60) + "..."
     : link.extractedLink;
-  const displayDate = link.updatedAt.slice(0, 16).replace("T", " ");
   const trackingUrl = `/go?url=${encodeURIComponent(link.extractedLink)}`;
+  const encodedUrl = encodeURIComponent(link.extractedLink);
 
   return (
     <tr>
@@ -296,8 +397,19 @@ const LinkRow: FC<LinkRowProps> = ({ link, clicks }) => {
       <td>
         <a href={link.commentUrl} target="_blank" rel="noopener">view</a>
       </td>
+      <td class="likes">{likes}</td>
       <td class="clicks">{clicks}</td>
-      <td class="updated">{displayDate}</td>
+      <td class="like-cell">
+        <button
+          type="button"
+          class={`heart-btn ${liked ? "liked" : ""}`}
+          data-url={encodedUrl}
+          data-likes={likes}
+          aria-label={liked ? "Unlike" : "Like"}
+        >
+          {liked ? "♥" : "♡"}
+        </button>
+      </td>
     </tr>
   );
 };
@@ -317,7 +429,7 @@ const Pagination: FC<PaginationProps> = (
 
   const params = new URLSearchParams();
   if (search) params.set("q", search);
-  if (sort !== "updated") params.set("sort", sort);
+  if (sort !== "likes") params.set("sort", sort);
   if (order !== "desc") params.set("order", order);
   const baseParams = params.toString();
   const prefix = baseParams ? `?${baseParams}&` : "?";

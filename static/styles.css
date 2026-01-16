@@ -165,10 +165,37 @@ a:hover {
   text-align: center;
 }
 
-.updated {
+.likes {
   color: #666;
   font-size: 13px;
-  white-space: nowrap;
+  text-align: center;
+}
+
+.like-cell {
+  text-align: center;
+}
+
+.heart-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #ccc;
+  padding: 4px 8px;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.heart-btn:hover {
+  transform: scale(1.2);
+  color: #ff69b4;
+}
+
+.heart-btn.liked {
+  color: #ff69b4;
+}
+
+.heart-btn:active {
+  transform: scale(0.95);
 }
 
 .pagination {

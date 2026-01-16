@@ -1,12 +1,13 @@
 {
-  "unstable": ["cron", "kv"],
+  "unstable": ["cron"],
   "lock": false,
   "tasks": {
-    "dev": "deno run --watch --unstable-kv -A main.tsx",
-    "start": "deno run --unstable-kv -A main.tsx",
-    "db:sync": "deno run --unstable-kv -A scripts/sync.ts"
+    "dev": "deno run --env-file --watch -A main.tsx",
+    "start": "deno run --env-file -A main.tsx",
+    "db:sync": "deno run --env-file -A scripts/sync.ts"
   },
   "imports": {
+    "@db/postgres": "jsr:@db/postgres@^0.19.5",
     "hono": "jsr:@hono/hono@^4",
     "linkedom": "npm:linkedom@^0.18.12"
   },
