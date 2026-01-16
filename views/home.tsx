@@ -246,16 +246,16 @@ const LinkRow: FC<LinkRowProps> = ({ link, clicks, likes, liked }) => {
 
   return (
     <tr>
-      <td class="author">{link.author}</td>
-      <td class="link">
+      <td class="author" data-label="Author">{link.author}</td>
+      <td class="link" data-label="Site">
         <a href={trackingUrl} target="_blank" rel="noopener">{displayUrl}</a>
       </td>
-      <td>
+      <td data-label="Comment">
         <a href={link.commentUrl} target="_blank" rel="noopener">view</a>
       </td>
-      <td class="likes">{likes}</td>
-      <td class="clicks">{clicks}</td>
-      <td class="like-cell">
+      <td class="likes" data-label="Likes">{likes}</td>
+      <td class="clicks" data-label="Clicks">{clicks}</td>
+      <td class="like-cell" data-label="Like">
         <button
           type="button"
           class={`heart-btn ${liked ? "liked" : ""}`}

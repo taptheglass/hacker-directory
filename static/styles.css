@@ -193,27 +193,25 @@ a:hover {
 }
 
 .heart-btn {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid #ff69b4;
   font-size: 20px;
   cursor: pointer;
-  color: #ccc;
+  color: #ff69b4;
   padding: 4px 8px;
-  transition: color 0.15s ease, transform 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .heart-btn:hover {
-  transform: scale(1.2);
+  background: #fff4fb;
   color: #ff69b4;
 }
 
 .heart-btn.liked {
-  color: #ff69b4;
+  background: #ff69b4;
+  color: #fff;
 }
 
-.heart-btn:active {
-  transform: scale(0.95);
-}
 
 .pagination {
   margin-top: 20px;
@@ -279,4 +277,143 @@ footer {
 .footer-github:hover {
   opacity: 1;
   text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  body {
+    padding: 16px;
+  }
+
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .header-links {
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .download-link {
+    margin-left: auto;
+  }
+
+  .search-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .search-form {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .search-form input[type="text"] {
+    width: 100%;
+  }
+
+  table {
+    display: block;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: block;
+  }
+
+  th {
+    font-weight: 500;
+  }
+
+  tr {
+    display: block;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #555;
+    padding-right: 12px;
+  }
+
+  .link {
+    word-break: break-word;
+  }
+
+  .link a {
+    display: block;
+    text-align: right;
+  }
+
+  .link::before {
+    white-space: nowrap;
+  }
+
+  .likes,
+  .clicks,
+  .like-cell {
+    text-align: right;
+  }
+
+  .like-cell {
+    padding-top: 10px;
+  }
+
+  .like-cell::before {
+    content: "";
+  }
+
+  .like-cell .heart-btn {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 1px solid #ff69b4;
+    border-radius: 6px;
+    background: transparent;
+    color: #ff69b4;
+    font-size: 20px;
+  }
+
+  .like-cell .heart-btn.liked {
+    background: #ff69b4;
+    color: #fff;
+  }
+
+  .pagination {
+    justify-content: center;
+  }
+
+  footer {
+    flex-wrap: wrap;
+    text-align: center;
+  }
 }
